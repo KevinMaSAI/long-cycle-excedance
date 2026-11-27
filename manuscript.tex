@@ -1,0 +1,472 @@
+\documentclass[11pt,reqno]{amsart}
+\usepackage[margin=1.08in]{geometry}
+\usepackage{amsmath,amssymb,booktabs,array}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!55!black,citecolor=blue!55!black,urlcolor=blue!55!black]{hyperref}
+\hypersetup{
+  pdftitle={Real zeros and consecutive interlacing of excedance polynomials with a minimum cycle length},
+  pdfauthor={Qiyuan Ma},
+  pdfkeywords={Excedances, permutation cycles, real-rootedness, interlacing, exact arithmetic}
+}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newcommand{\E}{E_{n,k}}
+\newcommand{\exc}{\operatorname{exc}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Exp}{\mathbb{E}}
+\newcommand{\Bin}{\operatorname{Bin}}
+\newcommand{\iu}{\mathrm{i}}
+\newcommand{\RR}{\mathbb{R}}
+\DeclareMathOperator{\Rea}{Re}
+\title[Interlacing with a minimum cycle length]{Real zeros and consecutive interlacing of excedance polynomials with a minimum cycle length}
+\author[Q. Ma]{Qiyuan Ma}
+% Print the full author block under the title (amsart otherwise defers
+% \address/\email to the end of the paper). Short form is kept for running heads.
+\makeatletter
+\def\@setauthors{%
+  \begingroup
+  \centering
+  \normalsize
+  \author@andify\authors
+  \def\thanks{\protect\thanks@warning}%
+  {\bfseries\authors}\\[6pt]
+  School of Artificial Intelligence, Shanghai Jiao Tong University, Shanghai, China\\
+  ORCID: \href{https://orcid.org/0009-0000-9532-0821}{0009-0000-9532-0821}\\
+  \href{mailto:mqyqwerty@sjtu.edu.cn}{mqyqwerty@sjtu.edu.cn}\par
+  \endgroup
+}
+\makeatother
+\date{November 27, 2026 \quad\textnormal{Preprint draft for verification}\\[4pt]\textnormal{DOI: \href{https://doi.org/10.5281/zenodo.24583559}{10.5281/zenodo.24583559}}}
+\keywords{Excedances, permutation cycles, real-rootedness, interlacing, exact arithmetic}
+\subjclass[2020]{05A15, 05A05, 26C10}
+\begin{document}
+\begin{abstract}
+For integers $n\ge k\ge3$, consider the excedance polynomial of permutations on $n$ letters whose cycles all have length at least $k$. We give a computer-assisted argument that the zero at the origin is simple, that the other $n-2$ zeros are distinct and negative, and that these nonzero zeros strictly interlace at consecutive orders. The proof compares two exact expansions of the same polynomial: an alternating occupancy series for the exterior and a pole expansion for the interior. The infinite parameter ranges are covered by uniform inequalities; exact arithmetic certifies the numerical inequalities and the explicitly identified finite boundary ranges.
+\end{abstract}
+\maketitle
+
+\section{Introduction}
+For $\pi\in S_n$, let $\exc(\pi)=|\{i:\pi(i)>i\}|$. Let $S_n^{(k)}$ consist of permutations all of whose cycles have length at least $k$, and put
+\[
+ E_{n,k}(t)=\sum_{\pi\in S_n^{(k)}}t^{\exc(\pi)},\qquad E_{0,k}=1,\qquad E_{n,k}=0\quad(0<n<k).
+\]
+The cases $k=1$ and $k=2$ give the ordinary Eulerian and derangement polynomials. In the catalogue \cite{SymCat}, Alexandersson asks whether for each $k\ge3$ the polynomials are real-rooted and interlace consecutively. That question concerns excedances, not descents, and imposes the upward-closed restriction on \emph{every} cycle length. We treat that restriction without an upper bound on either $n$ or $k$.
+
+\begin{theorem}[Main theorem]\label{thm:main}
+For every $n\ge k\ge3$, $E_{n,k}$ has degree $n-1$, a simple zero at $0$, and $n-2$ distinct negative zeros. If $a_1<\cdots<a_{n-2}$ and $b_1<\cdots<b_{n-1}$ are the zeros of $E_{n,k}/t$ and $E_{n+1,k}/t$, then
+\[
+ b_1<a_1<b_2<a_2<\cdots<b_{n-2}<a_{n-2}<b_{n-1}.
+\]
+In particular the original polynomials, including their common zero, interlace in the weak sense.
+\end{theorem}
+
+The insertion recurrence has a delayed term when $k\ge2$. For $k=2$ this term is $(n-1)tE_{n-2,2}$ and gives a direct interlacing induction; for $k\ge3$ it contains the Eulerian factor $A_{k-1}$ \cite{SymCat}. The simplest attempt to extend that induction is obstructed. In the gamma variable $u=t/(1+t)^2$, the previous quotient at $k=4,n=8$ has gamma polynomial $1+52u+136u^2$, whereas the lag term has gamma polynomial proportional to $u(1+2u)^2$. Both roots of the former lie in $(-1/2,0)$ and cannot interlace the latter's double root at $-1/2$. This confirms the obstruction described in \cite{Davis81}; it does not contradict the target assertion. The earlier attempts \cite{Davis55,Davis81,DavisNotes} did not give a proof for all $k$. The descent statement and failures of other allowed cycle-length sets are not used here.
+
+The proof below separates topological root counting from estimates. At a zero of the old row, we need the sign of the exact new row, not a bound on an approximation to its zeros. In the interior a two-component inequality gives this sign and avoids division of the full error by the small angular spacing. In the exterior we compare the two main terms of an alternating series. The estimates are organized by parameter bands. The companion files give their constants and exact replays; they form part of the computer-assisted argument.
+
+\section{Combinatorial and analytic identities}\label{sec:identity}
+Let $A_j(t)=\sum_{\sigma\in S_j}t^{\operatorname{des}(\sigma)}$, with $A_0=1$. Write a cycle on $m\ge2$ labels starting with the largest. Its first arrow is not an excedance, its last arrow is one, and the intermediate arrows count the ascents of an arbitrary linear order of the remaining labels. Reversing that order exchanges ascents and descents. Thus the cycle weight is $tA_{m-1}(t)$, and the labelled exponential formula gives
+\begin{equation}\label{eq:egf}
+ \sum_{n\ge0}E_{n,k}(t)\frac{z^n}{n!}
+   =\exp\left(\sum_{m\ge k}tA_{m-1}(t)\frac{z^m}{m!}\right).
+\end{equation}
+Independently, remove $n$ from its cycle. If the cycle has length $>k$, its removal gives an admissible permutation on $n-1$ labels. Reinsertion after an excedance preserves the count, whereas reinsertion after any other element increases it by one. If its cycle has length $k$, delete that cycle and choose its other $k-1$ labels. This yields
+\begin{equation}\label{eq:rec}
+ E_{n,k}=(n-1)tE_{n-1,k}+t(1-t)E_{n-1,k}'
+       +\binom{n-1}{k-1}tA_{k-1}E_{n-k,k}.
+\end{equation}
+This convention gives $E_{3,3}=t+t^2$, $E_{4,3}=t+4t^2+t^3$, and
+$E_{6,3}=t+36t^2+86t^3+36t^4+t^5$. For $k\le n<2k$ only a single $n$-cycle is possible. Inversion gives $t^nE_{n,k}(1/t)=E_{n,k}(t)$, since there are no fixed points. The only permutation with $n-1$ excedances is $(1,2,\dots,n)$, as is seen by successively forcing the images of $n-1,n-2,\ldots,1$. Its inverse is the only permutation with one excedance. Thus the first and last nonzero coefficients are both 1.
+
+\begin{lemma}[Occupancy expansion]\label{lem:occupancy}
+Distribute $n$ labelled balls independently and uniformly among $r$ labelled boxes and choose a uniform permutation of the boxes. Let $P_n(r)$ be the probability that every cycle of boxes contains at least $k$ balls in total and put $U_n(r)=rP_n(r)$. Then
+\begin{equation}\label{eq:occupancy}
+ \frac{E_{n,k}(t)}{(1-t)^n}=\sum_{r\ge1}r^{n-1}U_n(r)t^r
+ \qquad(|t|<1).
+\end{equation}
+Moreover $1\le U_n(r)\le\min(r,n/k)$ for $n\ge k$.
+\end{lemma}
+\begin{proof}
+Use $tA_{m-1}(t)/(1-t)^m=\sum_{j\ge1}j^{m-1}t^j$ in \eqref{eq:egf}. A cycle of $j$ boxes has labelled weight $1/j$, and each of its $m\ge k$ balls has $j$ possible boxes. The resulting bivariate exponential formula, divided by $r!$ for box labels and multiplied by $n!$ for ball labels, gives \eqref{eq:occupancy}. A single cycle of all boxes is always admissible and has probability $1/r$. For the upper bound, condition on integer box weights of total $W$. Expose the cycle of a uniformly chosen box by a uniform ordering and a uniformly chosen cycle length $j$. If $S_j$ is the prefix weight, apply induction on the number of remaining boxes: for $j<r$ with $S_j\ge k$, the success probability on the complement is at most $(W-S_j)/(k(r-j))$. Its conditional expectation equals the expected weight of the next box divided by $k$. On any ordering the sum of next-box weights over these legal prefixes is at most $W-k$. Adding the full cycle gives $rP\le1+(W-k)/k=W/k$. Zero-probability complements of total $<k$ cause no exception. Also $P\le1$.
+\end{proof}
+
+\begin{lemma}[Logistic poles and anchored expansion]\label{lem:poles}
+For $s\ge0$, set $t=-e^{-s}$, $p_j=s+(2j+1)\pi\iu$, $\rho=|p_0|$, $q_j=\rho/p_j$, and $\theta=\arg p_0\in(0,\pi/2]$ for $j\in\mathbb Z$. Put
+\[
+ g(z)=\exp\left(\sum_{a\ge k}\frac{z^a}{a}\right)=\sum_{a\ge0}d_a z^a,\qquad
+ \Delta(z)=(1-z)(g(z)-1),\qquad h_n=\frac{\rho^n E_{n,k}(t)}{n!(1-t)^n}.
+\]
+For $n\ge k$,
+\begin{equation}\label{eq:poles}
+ h_n=[z^n]\prod_{j\in\mathbb Z}g(q_j z).
+\end{equation}
+Define $\Delta_a=[z^a]\Delta(z)$ and
+\[
+ B_i(z)=\prod_{j\ne i}\left(1+\frac{\Delta(q_jz)}{1-q_j/q_i}\right)-1,\qquad
+ J_{N,i}=\sum_{b=k}^{N-k}d_{N-b}\frac{[z^b]B_i(z)}{q_i^b}.
+\]
+Let $u=\cos\theta$, $v=\sin\theta$. Then
+\begin{align}
+ h_n&=\sum_i q_i^n(d_n+J_{n,i}), \label{eq:anchor}\\
+ h_{n+1}-u h_n
+   &=\sum_i q_i^n(q_i-u)(d_{n+1}+J_{n+1,i})
+       +u(d_{n+1}-d_n)\sum_iq_i^n. \label{eq:centred}
+\end{align}
+\end{lemma}
+\begin{proof}
+The coefficient of $z^{m-1}$ in $(1+e^{z-s})^{-1}$, for $m\ge2$, is $\sum_jp_j^{-m}$. Integrate the function divided by $z^m$ on rectangles with horizontal sides at even multiples of $\pi$ and vertical sides tending to $\pm\infty$. The function is uniformly bounded on the contour, its residues at the $p_j$ are $-1$, and the boundary integral tends to zero. For $s>0$, its Taylor coefficients of positive degree also follow by geometric expansion at $z=0$. Analytic continuation, or continuity at $s=0$, gives the Eulerian identity there. Insert the resulting coefficient identity into \eqref{eq:egf}. The sums of absolute pole powers converge for $m\ge k\ge3$, which justifies coefficientwise multiplication near the origin.
+
+For a finite set $I$ of poles, expand $g(q_jz)=1+\Delta(q_jz)/(1-q_jz)$ and decompose the distinct simple denominators by
+\[
+ \prod_{j\in I}(1-q_jz)^{-1}=\sum_{i\in I}
+    \frac{1}{1-q_i z}\prod_{j\in I\setminus\{i\}}(1-q_j/q_i)^{-1}.
+\]
+The distinguished factor convolves with $\Delta/(1-z)=g-1$. This gives \eqref{eq:anchor}. For \eqref{eq:centred}, take the union of both coefficient ranges \emph{before} this convolution. A total numerator degree $n+1$ gives no old-row term: the partial-fraction coefficients $\lambda_i=\prod_{j\ne i}(1-q_j/q_i)^{-1}$ satisfy $\sum_{i\in I}\lambda_i/q_i=0$ for $|I|\ge2$, by the coefficient of $1/z$ at infinity. Thus at all permitted mixed degrees one obtains the multiplier $q_i-u$, without a separate mixed difference divided by $v$. Singleton sets leave exactly the diagonal correction written in \eqref{eq:centred}. The finite-prefix coefficients pass to the symmetric infinite limit by absolute convergence: $\Delta$ begins at degree $k$, a denominator factor can lose one power of a nondistinguished pole, and $\sum_j|q_j|^{k-1}<\infty$. After regrouping, the distinguished residual is at least $k-1$ even in the centred equation.
+\end{proof}
+
+\begin{remark}
+The number $d_a$ is the proportion of admissible permutations on $a$ letters at $t=1$. Differentiation gives $a \Delta_a=d_{a-k}-d_{a-1}$ and $d_a=((a-1)d_{a-1}+d_{a-k})/a$ for $a\ge k$. The counts on $k\le a<2k$ are exactly $1/a$. In particular $d_n>0$ in every normalization used below.
+\end{remark}
+
+\section{Two sign criteria and their connection}\label{sec:sign}
+\subsection{Interior sign criterion}
+Put $F=h_n/(2d_n)$ and $G=(h_{n+1}-u h_n)/(2vd_{n+1})$, using the quantities in Lemma~\ref{lem:poles}. Use $C=1+J_{n,0}/d_n=x+\iu y$ and $\phi=n\theta$. The nearest conjugate pair in $F$ gives $f=x\cos\phi+y\sin\phi$. In $G$ rewrite its leading pair using $C$ instead of $1+J_{n+1,0}/d_{n+1}$; it then gives $g=y\cos\phi-x\sin\phi$. The changes from this rewriting and the diagonal correction are among the errors below.
+
+\begin{lemma}[Interior ellipse]\label{lem:ellipse}
+Suppose $x\ge c>0$, $|F-f|\le V$, and $|G-g|\le W'$ at a given $s$. If
+\begin{equation}\label{eq:ellipse}
+ V^2+(W')^2<c^2,
+\end{equation}
+then at $\phi=j\pi$ the sign of $F$ is $(-1)^j$. At every old zero $F=0$ in the region, $\sin\phi\ne0$ and the sign of the next row is $-\operatorname{sgn}(\sin\phi)$.
+\end{lemma}
+\begin{proof}
+The witness sign follows from $x>V$. At an old zero $|f|\le V$. If $G\sin\phi\ge0$ or $\sin\phi=0$, then
+\[
+ x=f\cos\phi-g\sin\phi
+ \le V|\cos\phi|+W'|\sin\phi|
+ \le \sqrt{V^2+(W')^2},
+\]
+which contradicts \eqref{eq:ellipse}. At a zero of $h_n$, the signs of $G$ and $h_{n+1}$ coincide.
+\end{proof}
+To exclude roots in $|\phi-j\pi|\le\delta_0$, it suffices to bound $x\cos\delta_0-|y|\sin\delta_0>V$. One can also apply the same lower bound to a complex reference for $C$, subtracting its uniform error. This extra comparison is needed only at a joining point where $\phi$ can be slightly below a witness value.
+
+\subsection{Exterior sign criterion}
+For $s>0$, use $D=n-1$ and set
+\[
+ w_r=U_n(r)r^D e^{-rs},\qquad
+ D_r=\frac{r(U_{n+1}(r)-U_n(r))}{U_n(r)} .
+\]
+Both series in \eqref{eq:occupancy} converge absolutely on $s>0$, and the new-row terms relative to the old terms have multipliers $r+D_r$. The quantities $D_r$ are nonnegative.
+
+\begin{lemma}[Occupancy lower and drift bounds]\label{lem:drift}
+For $n\ge k$, $r\ge1$, and $H=n/k$,
+\begin{align}
+ U_n(r)&\ge \frac8{27}\min(r,H), \label{eq:occupancylower}\\
+ 0\le D_r&\le \frac{H}{U_n(r)}\sum_{b=1}^{r-1}
+           \Prob\{\Bin(n-1,b/r)=k-1\}. \label{eq:drift}
+\end{align}
+For the sum in \eqref{eq:drift}, the generic bound is $r/n$ plus the maximum of the summand as a function of $b/r$.
+\end{lemma}
+\begin{proof}
+For deterministic integer weights bounded by $L$, let $C_L=2k+L-2$. If the total $W$ is at least $k$, induction in the cycle-exposure argument from Lemma~\ref{lem:occupancy} gives $rP\ge W/C_L$. Indeed, after the full-cycle term $1$, the induction contributes $1/C_L$ times the expected sum of next weights over $k\le S_j\le W-k$, $j<r$. The first prefix reaching $k$ overshoots by at most $L-1$, and the first prefix exceeding $W-k$ has weight at least $W-k+1$. Hence this next-weight sum is at least $W-C_L$; if the interval is empty, the same inequality holds because $W\le C_L$. Truncate the random box weights at $L=k$. Success after truncation implies success before truncation. If the truncated total is $<k$, its lower bound still holds for the original probability by the full-cycle contribution. At mean $\mu\le k$, the capped binomial expectation divided by $\mu$ decreases with $\mu$, by the size-bias identity
+\[
+ \frac{\Exp\min(X,L)}{\mu}=\Exp\min(1,L/(1+Y)),\qquad
+ X\sim\Bin(n,\mu/n),\quad Y\sim\Bin(n-1,\mu/n).
+\]
+At mean $k$, the variance bound gives $\Exp\min(X,k)\ge k-\sqrt{k}/2$; for larger means use monotonicity of the capped expectation. Consequently
+\[
+ U_n(r)\ge
+ \frac{1-1/(2\sqrt{k})}{3-2/k}\min(r,H)
+ \ge \frac8{27}\min(r,H).
+\]
+For the last inequality, multiply by $54k$ to obtain the positive quadratic $6(\sqrt{k})^2-27\sqrt{k}+32$.
+
+For \eqref{eq:drift}, add one ball. A new success must repair a cycle that previously held exactly $k-1$ balls; its complement must already be admissible. The expected number of $b$-cycles is $1/b$, and the new ball hits such a cycle with probability $b/r$. Conditional on the old ball count in that cycle, its complement is the same occupancy model with $n-k+1$ balls and $r-b$ boxes. Apply the upper bound of Lemma~\ref{lem:occupancy} to the complement and use
+\[
+ \frac{\Prob\{\Bin(n,p)=k-1\}}{1-p}
+   =\frac{n}{n-k+1}\Prob\{\Bin(n-1,p)=k-1\}.
+\]
+The full cycle cannot need repair since $n\ge k$. The result is \eqref{eq:drift}. The last assertion follows by integrating on the two sides of the unimodal beta kernel; its integral on $[0,1]$ is $1/n$.
+\end{proof}
+
+For the witness at $s=D/m$, write $w_r^0=r^D e^{-rs}$. Discrete concavity of $\log w_r^0$ bounds the pure terms away from $m$. Only odd distances contribute against the sign $(-1)^m$. Comparing the corresponding $U_n(r)/U_n(m)$ gives a strict sign whenever the sum of these opposing relative weights is below 1. The witness at $m=1$ also excludes roots for $s>D$, since every relative term there decreases with $s$.
+
+In the bracket $D/(m+1)\le s\le D/m$, put $L_a=w_{m-a}$ and $R_a=w_{m+1+a}$, including zeros for indices not on the left. Assume the two outward ratios are $<1$, with the ratios after the first bounded by $\lambda<1$. At an old zero the two alternating masses agree:
+\[
+ U=\sum_{a\ge0}(-1)^aL_a=\sum_{a\ge0}(-1)^aR_a .
+\]
+If the neighboring weight products at the two main indices are bounded by $\alpha_L(1-\alpha_L)$ and $\alpha_R(1-\alpha_R)$, and the first outward ratios are respectively $<1-\alpha_L$ and $<1-\alpha_R$, then
+\[
+ L_1\le\alpha_L L_0,\qquad R_1\le\alpha_RR_0.
+\]
+For example $R_0\ge U\ge L_0-L_1$ implies that the left product is at least $(L_1/L_0)(1-L_1/L_0)$, which gives the claim; exchange the two sides for the other inequality. Also $L_0/U\le (1-\alpha_L)^{-1}$ and similarly on the right.
+
+The signed next-row series at the old zero, with sign factor $(-1)^{m+1}$, is
+\begin{equation}\label{eq:mean}
+ U+\sum_{a\ge1}(-1)^a a(L_a+R_a)+
+      \sum_{a\ge0}(-1)^a(D_{m+1+a}R_a-D_{m-a}L_a).
+\end{equation}
+It is obtained by subtracting $m$ times the old row. For $\lambda\le 1/2$ the sequences $aL_a,aR_a$ are decreasing for $a\ge1$, so the middle sum is bounded below by $-L_1-R_1$. The only adverse drift terms are even on the left and odd on the right. Use the first right term separately whenever its coefficient bound is sharper. Dividing by $U$ reduces positivity to two geometric sums, the inequalities used in the companion exterior certificates. If a band uses a different subtraction center, its own bound is stated with that center; subtracting any multiple of the old row leaves the next-row value at the zero unchanged.
+
+\subsection{Root count and interlacing}
+Let $M$ be the last exterior witness index and $S=D/M$. Suppose that $M<\lfloor n/2\rfloor$, that the interior bounds hold on $[0,S]$, and that the phase at $S$ lies strictly below $(M+1)\pi$. If it lies below $M\pi$, require exclusion of roots in the initial phase sliver up to $M\pi$. Starting at $s=D$, use the exterior witnesses $D/m$ for $1\le m\le M$, then the interior witnesses $\phi=j\pi$ for $M<j\le\lfloor n/2\rfloor$, in decreasing order of $s$. Their signs alternate. Hence there are $\lfloor n/2\rfloor-1$ distinct zeros in $(-1,0)$. Reciprocity supplies their distinct reciprocals. When $n$ is odd reciprocity also forces a zero at $-1$, and when $n$ is even $s=0$ is a nonzero witness. Together with $0$, these zeros exhaust degree $n-1$ and are simple.
+
+At the old zero in bracket $m$, the sign of the next row is $(-1)^{m+1}$ by \eqref{eq:mean} or Lemma~\ref{lem:ellipse}, including in the joining bracket. If $n$ is even, reciprocation for the next row reverses the sign across $-1$; if $n$ is odd, at the middle old root $-1$ the central criterion supplies the sign opposite to those at its two neighboring old roots. The signs therefore alternate across all nonzero old roots. The largest old root has positive next-row sign, whereas the next row is negative approaching $0$ from the left because its linear coefficient is 1. Reciprocation gives the other extreme interval. Applying the intermediate value theorem in the intervening intervals and checking the degree after dividing by $t$ proves strict interlacing.
+
+\section{Analytic majorants for the interior}\label{sec:majorants}
+We describe the common majorants underlying the certificates. They allow real intervals in $s$ and in the ratio $H=n/k$ to be certified at once. The version used for $k=14,15$ is detailed in Section~\ref{sec:last}. Earlier bands in the supplement use the same sign criteria with their own bounds.
+
+\subsection{Pole lattice and coefficient norms}
+Write $r_\ell=|q_\ell|^{k-1}$ for $\ell\ge0$, so $r_0=1$ and
+\[
+ |q_\ell|=\left(1+\frac{4\pi^2\ell(\ell+1)}{\rho^2}\right)^{-1/2}.
+\]
+If $R>\rho/(\pi k)$, the size of a factor of degree $b\ge k$ in $B_i$ can be controlled using the exact distance formula
+\begin{equation}\label{eq:dist}
+ |1-q_j/q_i|=\frac{2\pi|j-i|}{\rho}|q_j| .
+\end{equation}
+Let the norms of the coefficient sequence of $\Delta$ be expressed in units of $2/k$. Then a unit of that mass costs at most $p$ or $x$, respectively, at a primary or farther anchor, with
+\begin{align*}
+ p &=
+ R\min\left\{1+\tfrac32\sum_{\ell\ge1}r_\ell,\;
+   1+\sum_{\ell\ge1}r_\ell(\ell^{-1}+(\ell+1)^{-1})\right\},\\
+ x &=
+ R\min\left\{\tfrac32+\tfrac43\sum_{\ell\ge1}r_\ell,\;
+   2+2\sum_{\ell\ge1}\frac{r_\ell}{\ell+1}\right\}.
+\end{align*}
+For the first anchor the partner $-1$ contributes 1 and the two farther distances at level $\ell$ are $\ell$ and $\ell+1$. For a farther anchor the sum of the two primary inverse distances is at most $3/2$. The sum of inverse distances of a farther conjugate pair, omitting the anchor itself, is at most $4/3$. For the other bound on $x$, order all inverse distances as $1,1,1/2,1/2,\ldots$. The decreasing rearrangement of the remaining $r$-values is bounded by $1,1,r_1,r_1,\ldots$. The rearrangement bound follows first for finite sequences by exchange and then by monotone convergence. This proves the displayed norms. The factors $q_i^{-b}$ in the anchored coefficients are accounted for by the residual power $|q_i|^{n-b}$, not absorbed in $x$.
+
+For a farther conjugate pair at height $(2\ell+1)\pi$, one has
+\[
+ \left|\frac{q_\ell-u}{v}\right|^2=
+ \frac{\pi^2+(2\ell+1)^2s^2}{s^2+(2\ell+1)^2\pi^2}
+ \le (2\ell+1)^2.
+\]
+Thus a weighted half-lattice bound $W$, with weights $2\ell+1$, yields an unweighted value bound $V=W/3$. In a strip $s\le a\sqrt{k}$, each radial factor is bounded by
+$(1+\beta \ell(\ell+1))^{-m}$ when its exponent is at least $2m$ and $\beta\le4\pi^2/\rho^2$. For a proposed rational enclosure use
+$\log(1+y)\ge2y/(2+y)$, $y\ge0$. The weighted tail after level $J$ is bounded by
+\[
+ \int_J^\infty \frac{2z+1}{(1+\beta z(z+1))^m}\,dz
+ =\frac{(1+\beta J(J+1))^{1-m}}{\beta(m-1)},
+\]
+after checking that the integrand decreases from $J$. For other weights the decreasing ratio to $2\ell+1$ gives the appropriate prefactor. The scripts contain the finite tail-monotonicity inequalities, not just a truncation.
+
+\subsection{Prefix estimates and true adjacent change}
+Suppose $B\le H\le N$. Divide the absolute coefficients of $\Delta$ into degree classes. Give a class an interval for $b/k$ and an upper bound $m_j$ on its mass in units $2/k$. If there are $a$ factors, expand over ordered sequences of their classes and divide by $a!$. This majorizes the sum over distinct factors in $B_i$. Track the sums of the lower and upper degree endpoints. A lower endpoint above $N-1+1/k$ rules out both finite prefixes. An upper endpoint $h$ gives a residual ratio $\gamma=B-h$, and so determines a retained-count bound and the lattice exponent. This is the positive convolution used in the middle bands. The constant term in the primary amplitude is separate. The weighted farther bound also contains the pure diagonal at exponent $Bk$.
+
+The true adjacent diagonal cost is
+\begin{equation}\label{eq:diag}
+ D_0\;\ge\;
+ \frac{u}{v}\frac{|d_{n+1}-d_n|}{d_{n+1}}
+ \left(1+\sum_{\ell\ge1}|q_\ell|^n\right).
+\end{equation}
+It follows directly from \eqref{eq:centred}. In bounding it, use $(n+1)(\sin\theta)>B/R$ and
+$(n+1)(d_{n+1}-d_n)=d_{n+1-k}-d_n$. For the primary change
+$|J_{n+1,0}/d_{n+1}-J_{n,0}/d_n|$, there are two methods. The direct method uses the overlapping coefficients and the new boundary at total shift $b=n+1-k$.
+For the overlap in the range $n\ge2k$, the absolute relative change in the normalized count factors is at most $1/k+1/(n+1)$. To see this, use
+$|\Delta_j|/d_{j-1}\le 1/(k+1)$ for $j\ge k+1$ and
+$|d_{n+1}-d_n|/d_{n+1}<1/(n+1)$; both follow from the count recurrence and $1/(2k-1)\le d_j\le1/k$ for $j\ge k$. The latter interval follows by induction from $j d_j=\sum_{a=0}^{j-k}d_a$. The overlap bound therefore costs $(1/k+1/(n+1))P$ when $P$ bounds the absolute old mixed sum. At the boundary, a pure atom contribution has an integer number of factors fixed by its degree; a contribution containing a nonatom can be bounded by marking one such factor and using the supremum $|\Delta_b|\le1/[k(k+1)]$ for $b>k$. This accounts for the single exact degree without charging the entire tail.
+
+The second method compares both normalized primary prefixes with a common reference and costs at most $2\epsilon$ if each is within $\epsilon$ of that reference. For retained shifts with large residual, replace $d_{n-b}/d_n$ by 1 at cost at most $T(\gamma k)/d_n$, where $T(J)=\sum_{a\ge J}|\Delta_a|$ and the integer cutoff is rounded down. For short residuals use the explicit count bounds, and for omitted coefficients charge 1. The same degree convolution, now including omitted terms and using upper endpoints only, gives $\epsilon$. Its large-factor-count tail is bounded by $\exp(X)X^{h+1}/(h+1)!$ when $h$ factors have been retained and $X$ is the total absolute factor norm.
+
+A tilted estimate is useful when $H$ is larger. Weight degree $b$ by $\exp(\alpha b/k)$ in the norm. For $b_0\le b\le b_1$, the logarithm of
+$|q_i|^{n-b}\exp(-\alpha b/k)$ is affine in $b$; the maximum is bounded by the sum of the two endpoint values. Splitting at residual $Lk$ gives the additional term for the short-residual count bound. The same tilt makes late coefficients small in the reference comparison. This explains both the weighted error and primary-prefix approximations in the upper-band certificates.
+In all cases put $W'=W+D_0+d$ in \eqref{eq:ellipse}, with $d$ a bound for the primary change. In particular no estimate of an undifferenced mixed error has been divided by $v$.
+
+\subsection{A complex reference with explicit lower bounds}
+For $w=s+\pi\iu$ and $s>0$, the unweighted reference of the primary amplitude is
+\[
+ P_*(w)=\prod_{j\ne0}g\left(\frac{w}{w+2\pi\iu j}\right).
+\]
+If $\|\Delta\|_1\le 2\xi/k$, the factor norms give $\Rea P_*\ge 2-e^{\xi p}$. A second useful formula is
+\begin{equation}\label{eq:poisson}
+ P_*(w)=\frac{e^{H_{k-1}}}{w}
+ \exp\left(-\sum_{b\ge1}\frac{F_{k-1}(bw)}b\right),\qquad
+ F_d(z)=e^{-z}\sum_{a=0}^d\frac{z^a}{a!},
+\end{equation}
+where $H_m=\sum_{a=1}^m1/a$. To establish \eqref{eq:poisson}, start with real $w>0$ and differentiate the logarithm of the product. The derivative is
+$w^{k-1}\sum_{j\ne0}(w+2\pi\iu j)^{-k}$.
+The partial fractions of $(e^w-1)^{-1}$, differentiated $k-1$ times, transform the sum over all $j$ into
+$\sum_{b\ge1}b^{k-1}e^{-bw}/(k-1)!$.
+The $j=0$ term is $1/w$ after multiplication. Since
+$F_d'(z)=-e^{-z}z^d/d!$, the two logarithmic derivatives coincide. As $w\downarrow0$ one has $P_*(w)\to1$ and
+\[
+ \sum_{b\ge1}F_{k-1}(bw)/b
+   =-\log(1-e^{-w})+H_{k-1}+o(1),
+\]
+by Riemann sums for $x^{a-1}e^{-x}$. This fixes the constant. Both sides extend analytically to $\Rea w>0$ on the connected domain
+$|\operatorname{Im} w|<\pi$: all ratios have modulus less than 1 there and the sums converge locally uniformly. The boundary value at $s+\pi\iu$ follows by continuity. At the one additional unit-modulus ratio the logarithm of $g$ is taken by continuity from the disk, since that ratio is not 1.
+
+For $k=14,15$ and $s/\sqrt{k}\ge \ell\ge4$, take $s_0=3.74\ell$. The inequalities $|w|/s\le e^{\pi^2/(2s^2)}$, $k-1\le14$ and monotonicity of the real truncated Poisson tail give
+\[
+ \left|\sum_{b\ge1}F_{k-1}(bw)/b\right|
+ \le J_\ell
+ :=e^{5/\ell^2}\left(F_{14}(s_0)+
+ \frac{F_{14}(2s_0)}{2(1-e^{-(s_0-7)})}\right).
+\]
+The denominator follows because the logarithmic derivative of $F_{14}(bs_0)$ in $b\ge2$ is at most $-s_0+14/b$. Set $\zeta=J_\ell+\pi/s_0$. Using $e^{H_{k-1}}>(5/3)k$, which follows by checking $k=10$ and monotonicity of $H_{k-1}-\log k$, gives
+\begin{equation}\label{eq:poissonlower}
+ \Rea P_*(w)\ge
+ \frac{5e^{-J_\ell}}{3\pi R}\left(1-\frac{\zeta^2}{2}\right)
+\end{equation}
+whenever the final factor is positive. For an angular exclusion interval of half-width $\delta_0$, replace the final factor by
+$(1-\zeta^2/2)(1-\delta_0^2/2)-\zeta\delta_0$, when positive. Both bounds are evaluated with a downward enclosure of the positive factor $e^{-J_\ell}$.
+
+\section{The last boundary values $k=14,15$}\label{sec:last}
+This section specifies the estimates for the two bands not covered by the earlier all-row estimates. Write $\Delta_j=d_j-d_{j-1}$ and $T(Lk)=\sum_{j\ge Lk}|\Delta_j|$.
+
+\begin{lemma}[Count certificate]\label{lem:counts}
+For $k=14,15$ the following bounds hold:
+\[
+ \begin{array}{c|cc}
+  \text{indices}&\text{lower bound on }kd_j&\text{upper bound on }kd_j\\ \hline
+   j\ge2k&0.533&0.589\\
+   j\ge3k&0.580&0.584
+ \end{array}
+ \qquad \tfrac{k}{2}\|\Delta\|_1<0.780.
+\]
+The tail numbers $kT(2k),\ldots,kT(7k)$ are bounded above by
+$0.077,0.0038,0.000102,0.0000054,1.5\cdot10^{-7},3\cdot10^{-9}$, respectively.
+\end{lemma}
+\begin{proof}
+The recurrence for $d_j$ is a convex combination of $d_{j-1}$ and $d_{j-k}$. A block of $k$ consecutive values contained in an interval therefore propagates the interval forever. The exact recurrence through $8k-1$ both supplies the initial interval checks and computes short sums of differences. For $j\ge2k$ one has
+\[
+ j\Delta_j=-\sum_{j-k<i<j}\Delta_i.
+\]
+Summing on $Lk\le j<(L+1)k$ first gives $A_L\le(A_{L-1}+A_L)/L$, where $A_L$ is the absolute block variation, and proves summability. Summing over $j\ge Lk$ now gives $T(Lk)\le T((L-1)k)/L$ by counting multiplicities. Thus the unchecked tail from $7k$ is at most $(8/7)A_7$. Before $2k$, count differences telescope, because $d_j=1/j$ there apart from the atom at $k$. The resulting rational checks and the quarter-degree norm calculations are in the count certificate.
+\end{proof}
+
+At old $n\ge3k$, the retained ratio $d_{n-b}/d_n$ is below $1.725$, and below $1.016$ when the residual is at least $2k$. When comparing with the infinite reference, the relative errors for residuals at least $2k$, $3k$, or $Lk$ ($L\ge4$) are at most $0.089$, $0.0066$, or $0.0394/L!$, respectively. The first follows from the invariant intervals, and the others from $T(3k)/d_n$ and its factorial continuation. For $1\le\gamma<2$, use
+$\max\{0.089,1/(0.580\gamma)-1\}$ for residual at least $\gamma k$; this also covers a residual that actually exceeds $2k$. When a coefficient is omitted from the prefix the comparison price is 1. Use the same variation bounds in \eqref{eq:diag} with the lag index $n+1-k$.
+
+\begin{table}[t]
+\centering
+\caption{Coverage for $k=14,15$. Each range uses the indicated first member $n$ of a pair, so a comparison with $n+1$ is included at every boundary.}
+\label{tab:remaining}
+\begin{tabular}{@{}lll@{}}
+\toprule
+First member $n$ & Exterior cutoff $M$ & Interior verification \\
+\midrule
+$k\le n<2k-1$ & none & Eulerian polynomial recurrence \\
+$2k-1\le n\le2k$ & none & four signed remainder chains \\
+$2k+1\le n\le3k$ & $3$ & four sparse strips \\
+$3k\le n\le16k$ & $\lfloor\sqrt{n-1}/2\rfloor$ & quarter-degree bounds \\
+$16k\le n\le114k$ & $\lfloor 3\sqrt{n-1}/5\rfloor$ & tilted bounds \\
+$n\ge112k$ & eventual estimates & uniform residue comparison \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{First two-cycle transition}
+When both rows are single cycles, the Eulerian recurrence
+$A_{j+1}=(1+jt)A_j+t(1-t)A'_j$ gives strict interlacing: at the negative roots of $A_j$ the derivative term gives alternating signs, and the remaining intervals follow from the leading and constant coefficients. For old $n=2k-1,2k$, construct each quotient by adding to $A_{n-1}$ the contributions of the unordered cycle-length pairs $(a,n-a)$, $a\le n-a$. The contribution is
+\[
+ \binom{n}{a} t A_{a-1}A_{n-a-1}
+ \quad(a<n-a),\qquad
+ \tfrac12\binom{n}{a}tA_{a-1}^{\,2}\quad(a=n-a).
+\]
+For each of the four old rows, the negative-remainder chain starts at the new and old quotients, drops by one degree at each step, and has positive leading coefficients including the final constant. This certifies strict interlacing: from a linear polynomial and a constant, induct backwards in the signed Euclidean recurrences, evaluating at the zeros of the current divisor and checking the two outer intervals with the leading coefficients. The primitive pseudo-division in the certificate changes only positive scales.
+
+\subsection{Sparse, middle, and upper strips}
+In the sparse strips $2k+1\le n\le3k$, take $M=3$. The ratio bounds $B,N$ run through endpoints $2,9/4,5/2,11/4,3$. The corresponding upper bounds on $s/\sqrt{k}$ are $2.79,3.13,3.46,3.80$. The first three use only linear mixed terms. With $u_0=1-1/(N-1+1/14)$ the absolute primary cost is at most $(1+u_0)p$; the farther cost is bounded by
+\[
+ W\le g_B+x j_{B-1}+u_0 x f_1 .
+\]
+Here $g_B,j_{B-1},f_1$ are weighted farther half-lattices at powers $Bk,(B-1)k,k-1$, with exponents rounded down in the checks. The drift estimate is the overlap price plus $p/15$ at the boundary; the relative diagonal factors of \eqref{eq:diag} improve to $1,3/5,1/3$. In the last strip both row counts exceed $0.555/k$. The isolated atom has retained ratio at most $1.065$, early nonatom shifts through $1.5k$ have ratio at most $1.442$, and the rest at most $1.81$. Before $2k$, the three mass bounds for the atom and the two nonatom prefixes, in units $2/k$, are $1/2,1/6,1/12$. The remaining linear shifts and quadratic terms have norm at most
+\[
+ 1.81\left(\frac{p}{15}+
+                  p^2\left(\frac18+\frac1{60}\right)\right)
+\]
+at the primary, and the same expression at $x$ with residual powers attached for farther poles. The direct new-boundary term uses only the one possible exact degree. The exterior witness and signed comparison give the respective curvature pairs
+$(0.007,0.215)$ for $28\le D\le35$ and $(0.002,0.102)$ for $D\ge36$ in this range, with later outward ratios $0.126,0.061$. The proof of these constants uses the cycle shapes on three and four boxes and the binomial kernel in \eqref{eq:drift}. The companion checks the two-sided witness sum, \eqref{eq:mean}, \eqref{eq:ellipse}, and the $\pi/8$ exclusion at the splice.
+
+In the middle range use the lower and upper degree endpoints of each quarter-degree bin. The coefficients are those of Lemma~\ref{lem:counts}, evaluated by exact recurrence in the finitely many initial bins and bounded by the tails thereafter. The exact new degree in the primary change is at $b=n+1-k$; a pure atom has a feasible integer degree or does not contribute, and all other products admit the marked-nonatom bound. The reference floor is the larger of the two bounds in Section~\ref{sec:majorants} whenever the Poisson bound is available; when it is unavailable only the absolute floor is used. Each substrip verifies the ellipse after charging the farther and adjacent errors. For fixed $M$ the splice radius $S/\sqrt{k}$ is bounded by
+\[
+ \min\left\{\frac{D}{M\sqrt{14}},
+             \sqrt{\frac{ND^2}{M^2(D+1)}}\right\}.
+\]
+Both expressions increase with $D$ in that group. At $M=\lfloor\sqrt D/2\rfloor$ and $D\ge41$, the cubic bound on $\arctan$ gives $\phi(S)>M\pi$ because
+$(\pi^2/3)((D+1)/D)(M^2/D)<1$. Its upper bound gives $\phi(S)<(M+1)\pi$. Thus no angular sliver must be excluded in the middle range. The exterior constants and the signed inequality on the actual next row are in the middle edge certificate.
+
+For the upper range let $M=\lfloor 3\sqrt D/5\rfloor$. The exterior proof shows $S\le(5/3)\sqrt n+3.13$ and phase error $<\pi/16$; see the upper edge certificate. The absolute tilted count mass in units $2/k$ is at most
+\[
+ \tfrac12\left(e^\alpha+\tfrac12 e^{2\alpha}
+      +0.074 e^{3\alpha}+
+      \frac{0.0038 e^{4\alpha}}{1-e^\alpha/4}\right).
+\]
+The first two terms cover the atom and pre-$2k$ variation; the next two follow from the block and tail prices and the $1/4$ contraction of later tails. The four common interior strips through $s/\sqrt{k}=7$ use the absolute lower bound on $[0,4]$ and \eqref{eq:poissonlower} above it. Beyond 7, the seven old-ratio slabs have endpoints
+\[
+ 16,\quad22,\quad30,\quad41,\quad56,\quad76,\quad103,\quad114.
+\]
+The minimum splice radius in units of $\sqrt{k}$ exceeds 6, so the $\pi/16$ exclusion is needed only in the last common substrip and the outer bands. Each estimate applies to both terms of the true adjacent comparison. Finally the independent uniform residue certificate for $12\le k\le31$, $n\ge112k$, overlaps the upper range. The exact replays in the supplement check these inequalities and the cover in Table~\ref{tab:remaining}.
+
+\section{Completion of the parameter cover}\label{sec:coverage}
+To check the infinite quantifiers in Theorem~\ref{thm:main}, we record the hypotheses and joins of the certificates. The full band derivations and exact programs are in the supplement. The labels in Table~\ref{tab:cover} refer to a lower bound on $k$, not to checking a single row.
+
+\subsection{The small fixed parameters}
+For $3\le k\le13$, the fixed-parameter estimates treat the exterior and centre uniformly for $n\ge N_k$. The finite-prefix endpoint is one less than $N_k$:
+\[
+\begin{array}{c|rrrrrrrrrrr}
+k&3&4&5&6&7&8&9&10&11&12&13\\ \hline
+N_k&64&128&128&192&256&320&400&324&441&529&676 .
+\end{array}
+\]
+Each finite computation verifies both requirements, including the pair whose second member is $N_k$. For $k=3,4,5$ the prefixes use signed remainder chains, optionally on the reciprocal gamma representation. For the other values, dyadic sign brackets in a rational coordinate give the combined order of adjacent gamma roots. Distinct brackets exhaust the transformed degree; reciprocity and parity reconstruct the original order. When directed Horner enclosures do not decide a sign the replay uses exact evaluation. The infinite tails are separate analytic bounds and do not rest on the prefix size.
+
+\subsection{Uniform ranges for the larger parameters}
+Table~\ref{tab:cover} gives disjoint ranges of $k$ and the corresponding supplement entry points. Every inequality includes the actual successor of each stated first member $n$.
+\begin{itemize}
+ \item For $16\le k\le23$ use the sparse estimates up to $3k$, a half-square-root exterior with a degree-block interior from $3k$ to $16k$, and a denser exterior joined to a tilted interior above $16k$. At $16\le k\le19$ the middle cutoff has the exceptional value $M=4$ for $53\le n-1\le63$; its angular exclusion is checked separately.
+ \item The intermediate bands use the same two sign criteria. Their exterior bounds distinguish critical box-cycle sizes and use binomial tails for the others. The interior combines the corresponding positive scalar or complex reference with weighted lattice remainders. Each band states its own endpoint and exact constants in the supplement.
+ \item On $256\le k\le1023$, the upper bridge reaches past $900(k-1)\log(2(k-1))$, with separate overlap checks on $256$--$383$, $384$--$511$ and $512$--$1023$.
+ \item The branch $k\ge1024$ is truly unbounded in $k$. If $n\ge900(k-1)\log(2(k-1))$, use the uniform contour-residue estimate. Below that cutoff, the proof uses the complex primary comparison on $s\le(5/2)\sqrt n$, with $H\le900\log(2k)$, and a three-range exterior. In the high-$s$ strips it keeps the reference-prefix loss jointly with $s/k$; combining independent worst-case bounds for these two quantities would not certify the sign. This branch has its own derivation and rational replay.
+\end{itemize}
+\begin{table}[t]
+ \centering
+ \caption{Disjoint parameter blocks. The right column indexes the supporting derivations and scripts in the supplement.}
+ \label{tab:cover}
+ \begin{tabular}{@{}ll@{}}
+ \toprule
+ $k$ & Supplement entry point \\
+ \midrule
+ $3$--$13$ & Fixed-parameter tails and exact prefixes \\
+ $14$--$15$ & Count, edge, and central files for the final bands \\
+ $16$--$19$ & \texttt{long\_cycles\_all\_n\_k16.md} \\
+ $20$--$23$ & \texttt{long\_cycles\_all\_n\_k20.md} \\
+ $24$--$31$ & \texttt{long\_cycles\_all\_n\_k24.md} \\
+ $32$--$47$ & \texttt{long\_cycles\_all\_n\_k32.md} \\
+ $48$--$63$ & \texttt{long\_cycles\_all\_n\_k48.md} \\
+ $64$--$79$ & \texttt{long\_cycles\_all\_n\_k64.md} \\
+ $80$--$95$ & \texttt{long\_cycles\_all\_n\_k80.md} \\
+ $96$--$127$ & \texttt{long\_cycles\_all\_n\_k96.md} \\
+ $128$--$255$ & \texttt{long\_cycles\_all\_n\_k128.md} \\
+ $256$--$1023$ & \texttt{long\_cycles\_all\_n\_k256.md} \\
+ $k\ge1024$ & \texttt{COMPLEX\_PRIMARY\_LARGE\_K.md}, \texttt{UNIFORM\_K\_LOG.md}\\
+ \bottomrule
+ \end{tabular}
+\end{table}
+\begin{proof}[Proof of Theorem~\ref{thm:main}]
+For $3\le k\le13$, combine the fixed-parameter tail estimates with their finite prefixes. For $k=14,15$, take the verifications in Table~\ref{tab:remaining}. For $k\ge16$, use the indicated branch in Table~\ref{tab:cover}; each analytic sign inequality is applied to the original occupancy and anchored expansions. In each analytic band, the interior and exterior comparisons provide the witness and successor signs required in Section~\ref{sec:sign}. Its degree and reciprocity argument gives simplicity and strict interlacing. The finite certificates prove the same conclusion directly. Since the bands cover the first member of every adjacent pair, the transitions do not require any additional pair.
+\end{proof}
+
+\section*{Reproducibility and disclosure}
+The companion archive includes the \LaTeX{} source, a proof dependency index, the supporting band derivations, exact arithmetic code, and instructions distinguishing a quick replay from the longer fixed-parameter replays. The programs are not a formal proof kernel: the implications from their inequalities to the analytic conclusions are mathematical arguments in the text and supplement. No external referee report or Lean verification is claimed. Earlier replays report individual timings; aggregate model token usage and total compute were not available.
+
+OpenAI ChatGPT was used substantively to explore proof strategies, develop and check the interval certificates, organize the bounds, and draft this manuscript. This preprint and the companion materials are released under the Creative Commons Attribution 4.0 International License (CC-BY-4.0), \url{https://creativecommons.org/licenses/by/4.0/}. Per Alexandersson posed the problem \cite{SymCat,AlexIssue}. A recent public record addresses the restricted case $k=3$ \cite{Luminary}; the all-$k$ result is a separate claim. We do not claim publication priority.
+
+% Keep the added licence line from pushing the last reference onto a new page.
+\enlargethispage{3\baselineskip}
+\begin{thebibliography}{9}
+\bibitem{SymCat} P. Alexandersson, \emph{Real-rooted polynomials: open problems}, section \emph{Permutations with long cycles}, \href{https://www.symmetricfunctions.com/realRootedOpenProblems.htm#permutations-with-long-cycles}{SymCat}, accessed November 27, 2026.
+\bibitem{AlexIssue} P. Alexandersson, \emph{Which block-weight exponential families are real-rooted?}, RealRooted issue 2590, \url{https://github.com/PerAlexandersson/RealRooted/issues/2590}, accessed November 27, 2026.
+\bibitem{Davis55} GitHub user \texttt{1337isnot1337}, \emph{Alexandersson's long-cycle excedance conjecture}, issue 55, \url{https://github.com/1337isnot1337/solved-conjectures/issues/55}, November 2026.
+\bibitem{Davis81} GitHub user \texttt{1337isnot1337}, \emph{Alexandersson's long-cycle conjecture}, issue 81, \url{https://github.com/1337isnot1337/solved-conjectures/issues/81}, November 2026.
+\bibitem{DavisNotes} GitHub user \texttt{1337isnot1337}, \emph{Long-cycle research notebook}, \href{https://github.com/1337isnot1337/solved-conjectures/blob/2f3a0e089bb70041a6d156e53e8431099075b74e/research/alexandersson-long-cycles/README.md}{frozen revision 2f3a0e0}, November 2026.
+\bibitem{Robbins} H. Robbins, \emph{A remark on Stirling's formula}, Amer. Math. Monthly \textbf{62} (1955), no.~1, 26--29.
+\bibitem{Luminary} Luminary Research Archive, \emph{Real zeros and interlacing of excedance polynomials of permutations with all cycles of length at least three}, \href{https://research.luminaryoddities.org/all-research?edition=1&paper=real-zeros-interlacing-excedance-polynomials-cycles-length-at-least-three}{public catalogue entry}, accessed November 27, 2026.
+\end{thebibliography}
+\end{document}
+
